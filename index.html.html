@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>業務交車行銷助手 PRO - 智慧 AI 串接版</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f8fafc; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .canvas-wrapper {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      max-height: 500px;
+      min-height: 380px;
+      width: 100%;
+      background: #f1f5f9;
+      border-radius: 0.75rem;
+      overflow: hidden;
+    }
+    canvas {
+      max-width: 100%;
+      max-height: 480px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      touch-action: none;
+      user-select: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border-radius: 0.5rem;
+    }
+    .tag-checkbox:checked + span {
+      background-color: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-3.5 flex flex-col sm:flex-row justify-between items-center gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl shadow-md shadow-blue-500/20">
+          🚗
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            交車行銷助手 PRO
+            <span class="text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-medium">Gemini 3.7 / 3.5 API 連線版</span>
+          </h1>
+          <p class="text-xs text-slate-500">真實 AI 即時撰寫・自適應遮蔽修圖・情境組合標籤・個人品牌簽名檔</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-xs text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-full">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        API 本機直連・照片數據不外洩
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    
+    <!-- 左側：修圖畫布與工具 (6 欄) -->
+    <section class="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+            <span class="w-5 h-5 rounded bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">1</span>
+            照片隱私遮蔽與物件編輯
+          </h2>
+          <span id="canvasStatus" class="text-xs text-slate-500 font-mono">尚未載入照片</span>
+        </div>
+
+        <div class="mb-3">
+          <input type="file" id="imageInput" accept="image/*" class="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 p-3.5 rounded-xl mb-3 space-y-3 text-xs">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="font-bold text-slate-700">工具模式：</span>
+            <button id="btnModeMosaic" class="px-3 py-2 rounded-lg bg-blue-600 text-white font-medium flex items-center gap-1 shadow-sm transition">
+              <span>🖌️</span> 1. 模糊筆
+            </button>
+            <button id="btnModeSelect" class="px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 font-medium flex items-center gap-1 shadow-sm transition">
+              <span>👆</span> 選取 / 拖曳模式
+            </button>
+            <div class="h-4 w-[1px] bg-slate-300 mx-1"></div>
+            <button id="btnAddTextWatermark" class="px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 font-medium flex items-center gap-1 shadow-sm transition">
+              <span>🏷️</span> 2. 新增文字框
+            </button>
+            <button id="btnDeleteSelected" class="px-3 py-2 rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 font-medium flex items-center gap-1 ml-auto transition">
+              <span>🗑️</span> 刪除所選
+            </button>
+          </div>
+
+          <!-- 模糊筆面板 -->
+          <div id="mosaicControlPanel" class="pt-2 border-t border-slate-200 flex flex-wrap items-center gap-4 bg-slate-100/80 p-2.5 rounded-lg border border-slate-200">
+            <span class="font-bold text-slate-800">模糊筆調控：</span>
+            <div class="flex items-center gap-2">
+              <span class="text-slate-600">筆刷大小：</span>
+              <input type="range" id="mosaicBrushSize" min="15" max="100" value="40" class="w-20 accent-blue-600">
+              <span id="mosaicSizeVal" class="font-mono text-slate-700">40px</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-slate-600">馬賽克顆粒：</span>
+              <input type="range" id="mosaicBlockSize" min="8" max="30" value="16" class="w-20 accent-blue-600">
+              <span id="mosaicBlockVal" class="font-mono text-slate-700">16px</span>
+            </div>
+            <button id="btnUndoMosaic" class="px-2.5 py-1 bg-white border border-slate-300 rounded text-slate-700 hover:bg-slate-50 font-medium ml-auto">
+              ↩️ 復原塗抹
+            </button>
+          </div>
+
+          <!-- 50 種 Emoji -->
+          <div class="pt-2 border-t border-slate-200">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="font-bold text-slate-700">3. 常用 Emoji (點選新增至畫面，可自由拖曳縮放)：</span>
+            </div>
+            <div id="emojiGrid" class="flex flex-wrap gap-1 max-h-24 overflow-y-auto custom-scrollbar p-1.5 bg-white rounded-lg border border-slate-200 text-base"></div>
+          </div>
+
+          <!-- 物件屬性調節 -->
+          <div id="selectedPropsPanel" class="pt-2 border-t border-slate-200 flex flex-wrap items-center gap-4 bg-blue-50/60 p-2.5 rounded-lg border border-blue-100">
+            <span class="font-bold text-blue-900">選取物件控制：</span>
+            <div class="flex items-center gap-2">
+              <span class="text-slate-600">縮放：</span>
+              <input type="range" id="scaleSlider" min="20" max="300" value="80" class="w-20 accent-blue-600">
+              <span id="scaleVal" class="font-mono text-slate-700">80px</span>
+            </div>
+            <div id="textEditGroup" class="flex items-center gap-2 flex-1 min-w-[180px]">
+              <span class="text-slate-600">文字：</span>
+              <input type="text" id="objTextInput" class="flex-1 bg-white border border-slate-300 rounded px-2 py-1 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="輸入文字內容">
+            </div>
+          </div>
+        </div>
+
+        <div class="canvas-wrapper border border-slate-200 mb-3">
+          <canvas id="mainCanvas"></canvas>
+        </div>
+      </div>
+
+      <div class="mt-2 flex flex-wrap justify-between items-center gap-3">
+        <span class="text-xs text-slate-400">保留 100% 原圖超高解析度輸出</span>
+        <button id="downloadBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 flex items-center gap-2 transition">
+          <span>💾</span> 匯出完成交車照片
+        </button>
+      </div>
+    </section>
+
+    <!-- 右側：真實 AI 雲端串接 + 多情境標籤 (6 欄) -->
+    <section class="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+            <span class="w-5 h-5 rounded bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold">2</span>
+            真實 Gemini AI 文案引擎
+          </h2>
+          <span class="text-[11px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-200 font-medium">✨ 真 AI 聯網動態撰寫</span>
+        </div>
+
+        <!-- API Key 設定區 -->
+        <div class="mb-3 bg-amber-50/70 border border-amber-200 rounded-xl p-2.5 text-xs">
+          <div class="flex justify-between items-center mb-1">
+            <label class="font-bold text-amber-900 flex items-center gap-1">
+              <span>🔑</span> Google Gemini API 金鑰：
+            </label>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[11px] text-blue-600 underline">領取免費 API Key ➔</a>
+          </div>
+          <div class="flex gap-2">
+            <input type="password" id="geminiApiKey" class="flex-1 bg-white border border-amber-300 rounded-lg p-1.5 text-slate-800 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none" placeholder="貼上您的 Gemini API Key (以 AIzaSy 開頭)">
+            <button id="btnSaveKey" class="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium text-xs">記住 Key</button>
+          </div>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <!-- 核心交車背景輸入 -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">客戶背景、購車動機與現場互動（隨性輸入即可）</label>
+            <textarea id="storyInput" rows="3" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none leading-relaxed" placeholder="例如：剛結束公司旅遊行程，12 點飛機一落地，14 點我已經在交車室確認最後的細節。這份「迫不及待」，是因為這台RX350是老闆的退休禮物，還記得過年前來賞車時，老闆看著家人坐進車內那滿意神情，毫不猶豫笑著點頭說：「就是它了！」"></textarea>
+          </div>
+
+          <!-- 多選情境組合標籤 -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">情境組合標籤 (可複選，強化 AI 理解權重)：</label>
+            <div class="flex flex-wrap gap-1.5">
+              <label class="cursor-pointer">
+                <input type="checkbox" name="contextTags" value="退休禮物榮耀自己" class="hidden tag-checkbox" checked>
+                <span class="px-2.5 py-1 rounded-lg border border-slate-300 text-slate-600 bg-white text-[11px] font-medium transition inline-block">🏆 退休禮物/榮耀犒賞</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="checkbox" name="contextTags" value="一家三代同堂共享" class="hidden tag-checkbox" checked>
+                <span class="px-2.5 py-1 rounded-lg border border-slate-300 text-slate-600 bg-white text-[11px] font-medium transition inline-block">👨‍👩‍👧‍👦 三代同堂共享</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="checkbox" name="contextTags" value="舒適靜肅" class="hidden tag-checkbox" checked>
+                <span class="px-2.5 py-1 rounded-lg border border-slate-300 text-slate-600 bg-white text-[11px] font-medium transition inline-block">🛋️ 旗艦舒適靜肅</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="checkbox" name="contextTags" value="孝親長輩上下車" class="hidden tag-checkbox">
+                <span class="px-2.5 py-1 rounded-lg border border-slate-300 text-slate-600 bg-white text-[11px] font-medium transition inline-block">👵 孝親/長輩上下車便利</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="checkbox" name="contextTags" value="極致安全" class="hidden tag-checkbox">
+                <span class="px-2.5 py-1 rounded-lg border border-slate-300 text-slate-600 bg-white text-[11px] font-medium transition inline-block">🛡️ 極致安全防護</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="checkbox" name="contextTags" value="破除比價信任" class="hidden tag-checkbox">
+                <span class="px-2.5 py-1 rounded-lg border border-slate-300 text-slate-600 bg-white text-[11px] font-medium transition inline-block">🤝 破除比價/誠懇託付</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 平台與篇幅長度 -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">發布平台 (演算法機制)</label>
+              <select id="platformSelect" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 text-slate-800 focus:outline-none">
+                <option value="Instagram">📸 Instagram (生活金句・高停留率)</option>
+                <option value="Threads">🧵 Threads (真實隨筆・對話感互動)</option>
+                <option value="Facebook">📘 Facebook (顧問深度解析・溫暖長文)</option>
+                <option value="Minimal">✨ 極簡高級風 (日系留白・內斂品味)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">篇幅長度</label>
+              <select id="lengthSelect" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 text-slate-800 focus:outline-none">
+                <option value="medium">📖 標準深度 (180~260字 / 情境條列)</option>
+                <option value="short">⚡ 極簡精煉 (80~120字 / 金句速讀)</option>
+                <option value="long">🎬 沉浸長篇 (350~450字 / 故事起承轉合)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 專屬簽名檔 -->
+          <div class="bg-indigo-50/50 border border-indigo-100 rounded-xl p-2.5">
+            <div class="flex justify-between items-center mb-1">
+              <label class="block font-bold text-indigo-900">專屬簽名檔 / 品牌金句：</label>
+              <button id="btnSaveSign" class="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium">💾 記住簽名檔</button>
+            </div>
+            <textarea id="signatureInput" rows="1" class="w-full bg-white border border-indigo-200 rounded-lg p-1.5 text-slate-700 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none" placeholder="— Lexus 銷售顧問 士萱 | 用誠懇與透明，守護您與家人的下一趟旅程。"></textarea>
+          </div>
+
+          <!-- 生成按鈕 -->
+          <button id="btnGenerateAI" class="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-md shadow-indigo-500/20 transition flex items-center justify-center gap-2">
+            <span id="genBtnIcon">✨</span> <span id="genBtnText">啟動真實 AI 專屬文案生成</span>
+          </button>
+        </div>
+
+        <!-- 文案輸出與複製 -->
+        <div class="mt-3 pt-3 border-t border-slate-200">
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-bold text-slate-800 text-xs">AI 生成文案預覽</span>
+            <div class="flex items-center gap-2">
+              <span id="charCount" class="text-[11px] text-slate-400 font-mono">0 字</span>
+              <button id="btnCopy" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium border border-slate-300 flex items-center gap-1 transition">
+                <span>📋</span> 複製全文
+              </button>
+            </div>
+          </div>
+          <div id="outputBox" class="w-full h-44 bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 text-xs leading-relaxed overflow-y-auto custom-scrollbar whitespace-pre-wrap selection:bg-blue-100">
+輸入交車背景後，點擊上方按鈕，AI 將為您即時撰寫完全貼合該位客戶的專屬貼文...
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const EMOJI_LIST = [
+      "😊", "😄", "😁", "😆", "🥰", "😍", "😎", "🥳", "🤩", "🤗",
+      "🤫", "😋", "👍", "👏", "🙌", "🤝", "💪", "✨", "🎉", "🔥",
+      "👨", "👩", "👨‍🦱", "👩‍🦱", "👨‍🦳", "👩‍🦳", "👴", "👵", "🧑‍💼", "👨‍👩‍👧",
+      "🚗", "🚘", "🚙", "🏎️", "🛣️", "⛽", "🔑", "💼", "🏆", "🌟",
+      "🇹🇼", "🇯🇵", "🇩🇪", "🇺🇸", "🇬🇧", "☕", "🏡", "🌸", "☘️", "💯"
+    ];
+
+    const emojiGrid = document.getElementById('emojiGrid');
+    EMOJI_LIST.forEach(emoji => {
+      const btn = document.createElement('button');
+      btn.className = "w-7 h-7 rounded hover:bg-slate-100 flex items-center justify-center transition border border-transparent hover:border-slate-300";
+      btn.innerText = emoji;
+      btn.title = `新增 ${emoji}`;
+      btn.onclick = () => addEmojiObject(emoji);
+      emojiGrid.appendChild(btn);
+    });
+
+    const canvas = document.getElementById('mainCanvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const imageInput = document.getElementById('imageInput');
+    const canvasStatus = document.getElementById('canvasStatus');
+    const scaleSlider = document.getElementById('scaleSlider');
+    const scaleVal = document.getElementById('scaleVal');
+    const objTextInput = document.getElementById('objTextInput');
+    const textEditGroup = document.getElementById('textEditGroup');
+    const mosaicControlPanel = document.getElementById('mosaicControlPanel');
+
+    let baseCanvas = document.createElement('canvas');
+    let baseCtx = baseCanvas.getContext('2d', { willReadFrequently: true });
+    let mosaicHistory = [];
+    
+    let canvasObjects = [];
+    let selectedObjIndex = -1;
+    let currentMode = 'mosaic';
+    let isInteracting = false;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+
+    imageInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          baseCanvas.width = img.width;
+          baseCanvas.height = img.height;
+
+          baseCtx.drawImage(img, 0, 0);
+          mosaicHistory = [baseCtx.getImageData(0, 0, img.width, img.height)];
+
+          canvasObjects = [];
+          selectedObjIndex = -1;
+          renderCanvas();
+          canvasStatus.innerText = `原圖解析度：${img.width} × ${img.height} px`;
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    const btnModeMosaic = document.getElementById('btnModeMosaic');
+    const btnModeSelect = document.getElementById('btnModeSelect');
+
+    btnModeMosaic.addEventListener('click', () => {
+      currentMode = 'mosaic';
+      btnModeMosaic.classList.remove('bg-white', 'text-slate-700', 'border');
+      btnModeMosaic.classList.add('bg-blue-600', 'text-white');
+      btnModeSelect.classList.remove('bg-blue-600', 'text-white');
+      btnModeSelect.classList.add('bg-white', 'text-slate-700', 'border');
+      mosaicControlPanel.classList.remove('hidden');
+      selectedObjIndex = -1;
+      renderCanvas();
+    });
+
+    btnModeSelect.addEventListener('click', () => {
+      currentMode = 'select';
+      btnModeSelect.classList.remove('bg-white', 'text-slate-700', 'border');
+      btnModeSelect.classList.add('bg-blue-600', 'text-white');
+      btnModeMosaic.classList.remove('bg-blue-600', 'text-white');
+      btnModeMosaic.classList.add('bg-white', 'text-slate-700', 'border');
+      mosaicControlPanel.classList.add('hidden');
+    });
+
+    function applyDenseMosaic(cx, cy) {
+      const brushRadius = parseInt(document.getElementById('mosaicBrushSize').value, 10);
+      const blockSize = parseInt(document.getElementById('mosaicBlockSize').value, 10);
+
+      const startX = Math.max(0, Math.floor(cx - brushRadius));
+      const startY = Math.max(0, Math.floor(cy - brushRadius));
+      const endX = Math.min(baseCanvas.width, Math.ceil(cx + brushRadius));
+      const endY = Math.min(baseCanvas.height, Math.ceil(cy + brushRadius));
+      const w = endX - startX;
+      const h = endY - startY;
+
+      if (w <= 0 || h <= 0) return;
+
+      const imgData = baseCtx.getImageData(startX, startY, w, h);
+      const data = imgData.data;
+
+      for (let py = 0; py < h; py += blockSize) {
+        for (let px = 0; px < w; px += blockSize) {
+          const blockCenterX = startX + px + blockSize / 2;
+          const blockCenterY = startY + py + blockSize / 2;
+          const dist = Math.hypot(blockCenterX - cx, blockCenterY - cy);
+          
+          if (dist <= brushRadius) {
+            let rSum = 0, gSum = 0, bSum = 0, count = 0;
+            for (let dy = 0; dy < blockSize && py + dy < h; dy++) {
+              for (let dx = 0; dx < blockSize && px + dx < w; dx++) {
+                const idx = ((py + dy) * w + (px + dx)) * 4;
+                rSum += data[idx];
+                gSum += data[idx + 1];
+                bSum += data[idx + 2];
+                count++;
+              }
+            }
+            const rAvg = Math.round(rSum / count);
+            const gAvg = Math.round(gSum / count);
+            const bAvg = Math.round(bSum / count);
+
+            for (let dy = 0; dy < blockSize && py + dy < h; dy++) {
+              for (let dx = 0; dx < blockSize && px + dx < w; dx++) {
+                const idx = ((py + dy) * w + (px + dx)) * 4;
+                data[idx] = rAvg;
+                data[idx + 1] = gAvg;
+                data[idx + 2] = bAvg;
+              }
+            }
+          }
+        }
+      }
+      baseCtx.putImageData(imgData, startX, startY);
+      renderCanvas();
+    }
+
+    document.getElementById('btnUndoMosaic').addEventListener('click', () => {
+      if (mosaicHistory.length > 1) {
+        mosaicHistory.pop();
+        const prev = mosaicHistory[mosaicHistory.length - 1];
+        baseCtx.putImageData(prev, 0, 0);
+        renderCanvas();
+      }
+    });
+
+    document.getElementById('mosaicBrushSize').addEventListener('input', (e) => {
+      document.getElementById('mosaicSizeVal').innerText = e.target.value + 'px';
+    });
+    document.getElementById('mosaicBlockSize').addEventListener('input', (e) => {
+      document.getElementById('mosaicBlockVal').innerText = e.target.value + 'px';
+    });
+
+    function addEmojiObject(emoji) {
+      if (!baseCanvas.width) { alert('請先上傳照片！'); return; }
+      const newObj = {
+        type: 'emoji',
+        content: emoji,
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        size: Math.max(60, canvas.width * 0.08)
+      };
+      canvasObjects.push(newObj);
+      selectedObjIndex = canvasObjects.length - 1;
+      btnModeSelect.click();
+      updatePropsPanel();
+      renderCanvas();
+    }
+
+    function addTextWatermark() {
+      if (!baseCanvas.width) { alert('請先上傳照片！'); return; }
+      const newObj = {
+        type: 'text_box',
+        content: 'LEXUS CERTIFIED 尊榮交車',
+        x: canvas.width / 2,
+        y: canvas.height * 0.72,
+        size: Math.max(26, canvas.width * 0.035)
+      };
+      canvasObjects.push(newObj);
+      selectedObjIndex = canvasObjects.length - 1;
+      btnModeSelect.click();
+      updatePropsPanel();
+      renderCanvas();
+    }
+
+    document.getElementById('btnAddTextWatermark').addEventListener('click', addTextWatermark);
+    document.getElementById('btnDeleteSelected').addEventListener('click', () => {
+      if (selectedObjIndex >= 0) {
+        canvasObjects.splice(selectedObjIndex, 1);
+        selectedObjIndex = -1;
+        updatePropsPanel();
+        renderCanvas();
+      }
+    });
+
+    function updatePropsPanel() {
+      if (selectedObjIndex >= 0 && selectedObjIndex < canvasObjects.length) {
+        const obj = canvasObjects[selectedObjIndex];
+        scaleSlider.value = obj.size;
+        scaleVal.innerText = `${Math.round(obj.size)}px`;
+        if (obj.type === 'emoji') {
+          textEditGroup.classList.add('hidden');
+        } else {
+          textEditGroup.classList.remove('hidden');
+          objTextInput.value = obj.content;
+        }
+      }
+    }
+
+    scaleSlider.addEventListener('input', (e) => {
+      if (selectedObjIndex >= 0) {
+        canvasObjects[selectedObjIndex].size = parseFloat(e.target.value);
+        scaleVal.innerText = `${Math.round(e.target.value)}px`;
+        renderCanvas();
+      }
+    });
+
+    objTextInput.addEventListener('input', (e) => {
+      if (selectedObjIndex >= 0 && canvasObjects[selectedObjIndex].type !== 'emoji') {
+        canvasObjects[selectedObjIndex].content = e.target.value;
+        renderCanvas();
+      }
+    });
+
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+      };
+    }
+
+    function checkHitObject(x, y) {
+      for (let i = canvasObjects.length - 1; i >= 0; i--) {
+        const obj = canvasObjects[i];
+        if (obj.type === 'emoji') {
+          const r = obj.size * 0.7;
+          if (Math.hypot(obj.x - x, obj.y - y) <= r) return i;
+        } else {
+          ctx.font = `bold ${obj.size}px system-ui, sans-serif`;
+          const m = ctx.measureText(obj.content);
+          const w = m.width + obj.size * 1.2;
+          const h = obj.size * 1.5;
+          if (x >= obj.x - w/2 && x <= obj.x + w/2 && y >= obj.y - h/2 && y <= obj.y + h/2) return i;
+        }
+      }
+      return -1;
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      if (!baseCanvas.width) return;
+      const pos = getPos(e);
+      if (currentMode === 'mosaic') {
+        isInteracting = true;
+        applyDenseMosaic(pos.x, pos.y);
+      } else {
+        const hit = checkHitObject(pos.x, pos.y);
+        if (hit >= 0) {
+          selectedObjIndex = hit;
+          isInteracting = true;
+          dragOffsetX = pos.x - canvasObjects[hit].x;
+          dragOffsetY = pos.y - canvasObjects[hit].y;
+          updatePropsPanel();
+        } else {
+          selectedObjIndex = -1;
+        }
+        renderCanvas();
+      }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isInteracting || !baseCanvas.width) return;
+      const pos = getPos(e);
+      if (currentMode === 'mosaic') {
+        applyDenseMosaic(pos.x, pos.y);
+      } else if (selectedObjIndex >= 0) {
+        canvasObjects[selectedObjIndex].x = pos.x - dragOffsetX;
+        canvasObjects[selectedObjIndex].y = pos.y - dragOffsetY;
+        renderCanvas();
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isInteracting && currentMode === 'mosaic') {
+        if (mosaicHistory.length > 15) mosaicHistory.shift();
+        mosaicHistory.push(baseCtx.getImageData(0, 0, baseCanvas.width, baseCanvas.height));
+      }
+      isInteracting = false;
+    });
+
+    canvas.addEventListener('touchstart', (e) => {
+      if (!baseCanvas.width) return;
+      const pos = getPos(e);
+      if (currentMode === 'mosaic') {
+        isInteracting = true;
+        applyDenseMosaic(pos.x, pos.y);
+      } else {
+        const hit = checkHitObject(pos.x, pos.y);
+        if (hit >= 0) {
+          selectedObjIndex = hit;
+          isInteracting = true;
+          dragOffsetX = pos.x - canvasObjects[hit].x;
+          dragOffsetY = pos.y - canvasObjects[hit].y;
+          updatePropsPanel();
+        } else {
+          selectedObjIndex = -1;
+        }
+        renderCanvas();
+      }
+      e.preventDefault();
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+      if (!isInteracting || !baseCanvas.width) return;
+      const pos = getPos(e);
+      if (currentMode === 'mosaic') {
+        applyDenseMosaic(pos.x, pos.y);
+      } else if (selectedObjIndex >= 0) {
+        canvasObjects[selectedObjIndex].x = pos.x - dragOffsetX;
+        canvasObjects[selectedObjIndex].y = pos.y - dragOffsetY;
+        renderCanvas();
+      }
+      e.preventDefault();
+    });
+
+    window.addEventListener('touchend', () => {
+      if (isInteracting && currentMode === 'mosaic') {
+        if (mosaicHistory.length > 15) mosaicHistory.shift();
+        mosaicHistory.push(baseCtx.getImageData(0, 0, baseCanvas.width, baseCanvas.height));
+      }
+      isInteracting = false;
+    });
+
+    function renderCanvas() {
+      if (!baseCanvas.width) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(baseCanvas, 0, 0);
+
+      canvasObjects.forEach((obj, idx) => {
+        ctx.save();
+        if (obj.type === 'emoji') {
+          ctx.font = `${obj.size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.shadowColor = 'rgba(0,0,0,0.35)';
+          ctx.shadowBlur = 8;
+          ctx.shadowOffsetX = 1;
+          ctx.shadowOffsetY = 2;
+          ctx.fillText(obj.content, obj.x, obj.y);
+        } else {
+          const fontSize = obj.size;
+          ctx.font = `bold ${fontSize}px system-ui, -apple-system, sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+
+          const m = ctx.measureText(obj.content);
+          const padX = fontSize * 0.6;
+          const padY = fontSize * 0.35;
+          const w = m.width + padX * 2;
+          const h = fontSize + padY * 2;
+
+          ctx.fillStyle = '#FFFFFF';
+          ctx.shadowColor = 'rgba(0,0,0,0.3)';
+          ctx.shadowBlur = 10;
+          ctx.shadowOffsetY = 2;
+
+          const rx = obj.x - w / 2;
+          const ry = obj.y - h / 2;
+          ctx.beginPath();
+          ctx.roundRect ? ctx.roundRect(rx, ry, w, h, 6) : ctx.rect(rx, ry, w, h);
+          ctx.fill();
+
+          ctx.shadowColor = 'transparent';
+          ctx.fillStyle = '#0f172a';
+          ctx.fillText(obj.content, obj.x, obj.y);
+        }
+
+        if (idx === selectedObjIndex && currentMode === 'select') {
+          ctx.strokeStyle = '#2563eb';
+          ctx.lineWidth = Math.max(3, canvas.width * 0.003);
+          ctx.setLineDash([8, 8]);
+          const r = obj.type === 'emoji' ? obj.size * 0.7 : (obj.size * 1.1);
+          ctx.strokeRect(obj.x - r, obj.y - r, r * 2, r * 2);
+        }
+        ctx.restore();
+      });
+    }
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      if (!baseCanvas.width) { alert('請先上傳圖片！'); return; }
+      selectedObjIndex = -1;
+      renderCanvas();
+      const link = document.createElement('a');
+      link.download = `Delivery_Photo_HQ_${Date.now()}.jpg`;
+      link.href = canvas.toDataURL('image/jpeg', 0.95);
+      link.click();
+    });
+
+    // =========================================================================
+    // API 金鑰與簽名檔管理
+    // =========================================================================
+    const STORAGE_KEY_API = 'car_delivery_gemini_api_key_v1';
+    const STORAGE_KEY_SIGN = 'car_delivery_signature_v1';
+
+    const savedApiKey = localStorage.getItem(STORAGE_KEY_API);
+    if (savedApiKey) document.getElementById('geminiApiKey').value = savedApiKey;
+
+    const savedSign = localStorage.getItem(STORAGE_KEY_SIGN);
+    if (savedSign) {
+      document.getElementById('signatureInput').value = savedSign;
+    } else {
+      document.getElementById('signatureInput').value = "— Lexus 銷售顧問 士萱 | 用誠懇與透明，守護您與家人的下一趟旅程。";
+    }
+
+    document.getElementById('btnSaveKey').addEventListener('click', () => {
+      const key = document.getElementById('geminiApiKey').value.trim();
+      localStorage.setItem(STORAGE_KEY_API, key);
+      alert('🔑 API Key 已儲存於本機！');
+    });
+
+    document.getElementById('btnSaveSign').addEventListener('click', () => {
+      const signText = document.getElementById('signatureInput').value.trim();
+      localStorage.setItem(STORAGE_KEY_SIGN, signText);
+      alert('✅ 專屬簽名檔已記住！');
+    });
+
+    // =========================================================================
+    // 智慧 API 調用（支援 3.7 / 3.5 / 3.1 與自動 ListModels 容錯機制）
+    // =========================================================================
+    async function callGeminiAPI(apiKey, prompt) {
+      const modelsToTry = [
+        'gemini-3.7-flash',
+        'gemini-3.5-flash-lite',
+        'gemini-3.1-pro',
+        'gemini-2.0-flash',
+        'gemini-1.5-flash'
+      ];
+
+      let lastError = null;
+
+      for (const model of modelsToTry) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: {
+                temperature: 0.7,
+                topK: 40,
+                topP: 0.95
+              }
+            })
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+          } else {
+            const err = await response.json();
+            lastError = err.error?.message || 'API 請求失敗';
+          }
+        } catch (e) {
+          lastError = e.message;
+        }
+      }
+
+      // 自動向官方查詢帳號可用模型清單
+      try {
+        const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+        const listRes = await fetch(listUrl);
+        if (listRes.ok) {
+          const listData = await listRes.json();
+          const validModel = listData.models?.find(m => 
+            m.supportedGenerationMethods?.includes('generateContent') && m.name.includes('flash')
+          ) || listData.models?.find(m => m.supportedGenerationMethods?.includes('generateContent'));
+
+          if (validModel) {
+            const dynamicUrl = `https://generativelanguage.googleapis.com/v1beta/${validModel.name}:generateContent?key=${apiKey}`;
+            const dynamicRes = await fetch(dynamicUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            if (dynamicRes.ok) {
+              const dynData = await dynamicRes.json();
+              return dynData.candidates[0].content.parts[0].text;
+            }
+          }
+        }
+      } catch (e) {}
+
+      throw new Error(lastError || '無法連接至 Gemini 服務，請確認 API Key 是否有效。');
+    }
+
+    // AI 生成主流程
+    document.getElementById('btnGenerateAI').addEventListener('click', async () => {
+      const story = document.getElementById('storyInput').value.trim();
+      if (!story) {
+        alert('請先輸入客戶背景與動機！');
+        return;
+      }
+
+      const platform = document.getElementById('platformSelect').value;
+      const lengthMode = document.getElementById('lengthSelect').value;
+      const selectedTags = Array.from(document.querySelectorAll('input[name="contextTags"]:checked')).map(cb => cb.value).join('、');
+      const signature = document.getElementById('signatureInput').value.trim();
+      const apiKey = document.getElementById('geminiApiKey').value.trim();
+
+      const outputBox = document.getElementById('outputBox');
+      const genBtnText = document.getElementById('genBtnText');
+      const genBtnIcon = document.getElementById('genBtnIcon');
+
+      let lengthDesc = "約 180~260 字，包含開場情境、購車考量條列、售後承諾與互動收尾";
+      if (lengthMode === "short") lengthDesc = "約 80~120 字，極簡精煉，注重對比金句與純粹祝福，不囉嗦";
+      else if (lengthMode === "long") lengthDesc = "約 350~450 字，完整的沉浸式故事，包含相遇契機、車主換車背後的細膩心理描繪、專業選車分析與尊榮售後承諾";
+
+      const systemPrompt = `你是一位專業且真誠的 Lexus 汽車銷售顧問（業務名：士萱）。
+請根據以下真實的交車素材，為社群平台【${platform}】撰寫一篇具有溫度、保有個人專業品牌風格的交車貼文。
+
+【車主交車背景素材】：
+${story}
+
+【重要情境標籤】：
+${selectedTags}
+
+【篇幅長度要求】：
+${lengthDesc}
+
+【寫作核心原則】：
+1. 嚴格根據上述素材撰寫！請精確捕捉素材中的人名、用車故事、退休禮物或長輩細節，絕不要自行胡亂套用無關的舊模板（如無關的二寶、安全座椅等）。
+2. 語氣自然誠懇，符合 ${platform} 現行演算法（注重真實停留率與真誠互動），避免浮誇的農場標題。
+3. 文末請自然附上以下簽名檔：
+${signature}
+
+請直接輸出最終文案內容：`;
+
+      genBtnText.innerText = "AI 正在深度構思撰寫中...";
+      genBtnIcon.innerText = "⏳";
+
+      try {
+        if (!apiKey) {
+          alert('請先在上方填入並記住您的 Gemini API Key 才能啟動真實 AI 撰寫！');
+          return;
+        }
+        const aiResult = await callGeminiAPI(apiKey, systemPrompt);
+        outputBox.innerText = aiResult.trim();
+        document.getElementById('charCount').innerText = `${outputBox.innerText.length} 字`;
+      } catch (err) {
+        alert('API 呼叫失敗：' + err.message);
+      } finally {
+        genBtnText.innerText = "啟動真實 AI 專屬文案生成";
+        genBtnIcon.innerText = "✨";
+      }
+    });
+
+    document.getElementById('btnCopy').addEventListener('click', () => {
+      const text = document.getElementById('outputBox').innerText;
+      if (!text || text.startsWith('輸入交車背景')) {
+        alert('請先生成文案！');
+        return;
+      }
+      navigator.clipboard.writeText(text).then(() => alert('🎉 文案已成功複製到剪貼簿！'));
+    });
+  </script>
+</body>
+</html>
