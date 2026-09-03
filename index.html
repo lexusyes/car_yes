@@ -50,14 +50,14 @@
         <div>
           <h1 class="text-base font-bold text-slate-900 flex items-center gap-2">
             交車行銷助手 PRO
-            <span class="text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-medium">Gemini 3.7 / 3.5 API 連線版</span>
+            <span class="text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-medium">標準 5 大架構系統提示詞版</span>
           </h1>
-          <p class="text-xs text-slate-500">真實 AI 即時撰寫・自適應遮蔽修圖・情境組合標籤・個人品牌簽名檔</p>
+          <p class="text-xs text-slate-500">標準文案結構融入・自適應遮蔽修圖・情境組合標籤・個人品牌簽名檔</p>
         </div>
       </div>
       <div class="flex items-center gap-2 text-xs text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-full">
         <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-        API 本機直連・照片數據不外洩
+        API 本機直連・各用戶獨立安全
       </div>
     </div>
   </header>
@@ -97,7 +97,7 @@
             </button>
           </div>
 
-          <!-- 模糊筆面板 -->
+          <!-- 模糊筆設定面板 -->
           <div id="mosaicControlPanel" class="pt-2 border-t border-slate-200 flex flex-wrap items-center gap-4 bg-slate-100/80 p-2.5 rounded-lg border border-slate-200">
             <span class="font-bold text-slate-800">模糊筆調控：</span>
             <div class="flex items-center gap-2">
@@ -115,7 +115,7 @@
             </button>
           </div>
 
-          <!-- 50 種 Emoji -->
+          <!-- 50 種 Emoji 選擇盤 -->
           <div class="pt-2 border-t border-slate-200">
             <div class="flex items-center justify-between mb-1.5">
               <span class="font-bold text-slate-700">3. 常用 Emoji (點選新增至畫面，可自由拖曳縮放)：</span>
@@ -151,7 +151,7 @@
       </div>
     </section>
 
-    <!-- 右側：真實 AI 雲端串接 + 多情境標籤 (6 欄) -->
+    <!-- 右側：真實 AI 雲端串接 + 快速綁定 (6 欄) -->
     <section class="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
       <div>
         <div class="flex items-center justify-between mb-3">
@@ -159,10 +159,10 @@
             <span class="w-5 h-5 rounded bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold">2</span>
             真實 Gemini AI 文案引擎
           </h2>
-          <span class="text-[11px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-200 font-medium">✨ 真 AI 聯網動態撰寫</span>
+          <span class="text-[11px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-200 font-medium">✨ 標準 5 大架構系統提示詞版</span>
         </div>
 
-        <!-- API Key 設定區 -->
+        <!-- API Key 設定區 (支援網址自動綁定) -->
         <div class="mb-3 bg-amber-50/70 border border-amber-200 rounded-xl p-2.5 text-xs">
           <div class="flex justify-between items-center mb-1">
             <label class="font-bold text-amber-900 flex items-center gap-1">
@@ -174,13 +174,14 @@
             <input type="password" id="geminiApiKey" class="flex-1 bg-white border border-amber-300 rounded-lg p-1.5 text-slate-800 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none" placeholder="貼上您的 Gemini API Key (以 AIzaSy 開頭)">
             <button id="btnSaveKey" class="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium text-xs">記住 Key</button>
           </div>
+          <p class="text-[10px] text-amber-700 mt-1">※ 金鑰僅存於各自裝置瀏覽器中；亦可直接透過專屬連結自動綁定。</p>
         </div>
 
         <div class="space-y-3 text-xs">
-          <!-- 核心交車背景輸入 -->
+          <!-- 核心背景輸入 -->
           <div>
             <label class="block font-bold text-slate-700 mb-1">客戶背景、購車動機與現場互動（隨性輸入即可）</label>
-            <textarea id="storyInput" rows="3" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none leading-relaxed" placeholder="例如：剛結束公司旅遊行程，12 點飛機一落地，14 點我已經在交車室確認最後的細節。這份「迫不及待」，是因為這台RX350是老闆的退休禮物，還記得過年前來賞車時，老闆看著家人坐進車內那滿意神情，毫不猶豫笑著點頭說：「就是它了！」"></textarea>
+            <textarea id="storyInput" rows="3" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none leading-relaxed" placeholder="例如：陳小姐和爸爸一同賞車，因體諒家人上下車更便利，而選擇es300h"></textarea>
           </div>
 
           <!-- 多選情境組合標籤 -->
@@ -188,24 +189,24 @@
             <label class="block font-bold text-slate-700 mb-1">情境組合標籤 (可複選，強化 AI 理解權重)：</label>
             <div class="flex flex-wrap gap-1.5">
               <label class="cursor-pointer">
-                <input type="checkbox" name="contextTags" value="退休禮物榮耀自己" class="hidden tag-checkbox" checked>
-                <span class="px-2.5 py-1 rounded-lg border border-slate-300 text-slate-600 bg-white text-[11px] font-medium transition inline-block">🏆 退休禮物/榮耀犒賞</span>
-              </label>
-              <label class="cursor-pointer">
-                <input type="checkbox" name="contextTags" value="一家三代同堂共享" class="hidden tag-checkbox" checked>
-                <span class="px-2.5 py-1 rounded-lg border border-slate-300 text-slate-600 bg-white text-[11px] font-medium transition inline-block">👨‍👩‍👧‍👦 三代同堂共享</span>
+                <input type="checkbox" name="contextTags" value="孝親長輩上下車" class="hidden tag-checkbox" checked>
+                <span class="px-2.5 py-1 rounded-lg border border-slate-300 text-slate-600 bg-white text-[11px] font-medium transition inline-block">👵 孝親/長輩上下車便利</span>
               </label>
               <label class="cursor-pointer">
                 <input type="checkbox" name="contextTags" value="舒適靜肅" class="hidden tag-checkbox" checked>
                 <span class="px-2.5 py-1 rounded-lg border border-slate-300 text-slate-600 bg-white text-[11px] font-medium transition inline-block">🛋️ 旗艦舒適靜肅</span>
               </label>
               <label class="cursor-pointer">
-                <input type="checkbox" name="contextTags" value="孝親長輩上下車" class="hidden tag-checkbox">
-                <span class="px-2.5 py-1 rounded-lg border border-slate-300 text-slate-600 bg-white text-[11px] font-medium transition inline-block">👵 孝親/長輩上下車便利</span>
-              </label>
-              <label class="cursor-pointer">
                 <input type="checkbox" name="contextTags" value="極致安全" class="hidden tag-checkbox">
                 <span class="px-2.5 py-1 rounded-lg border border-slate-300 text-slate-600 bg-white text-[11px] font-medium transition inline-block">🛡️ 極致安全防護</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="checkbox" name="contextTags" value="二寶家庭" class="hidden tag-checkbox">
+                <span class="px-2.5 py-1 rounded-lg border border-slate-300 text-slate-600 bg-white text-[11px] font-medium transition inline-block">👨‍👩‍👧‍👦 二寶/家庭雙汽座</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="checkbox" name="contextTags" value="退休禮物榮耀犒賞" class="hidden tag-checkbox">
+                <span class="px-2.5 py-1 rounded-lg border border-slate-300 text-slate-600 bg-white text-[11px] font-medium transition inline-block">🏆 退休禮物/榮耀犒賞</span>
               </label>
               <label class="cursor-pointer">
                 <input type="checkbox" name="contextTags" value="破除比價信任" class="hidden tag-checkbox">
@@ -229,9 +230,9 @@
             <div>
               <label class="block font-bold text-slate-700 mb-1">篇幅長度</label>
               <select id="lengthSelect" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 text-slate-800 focus:outline-none">
-                <option value="medium">📖 標準深度 (180~260字 / 情境條列)</option>
-                <option value="short">⚡ 極簡精煉 (80~120字 / 金句速讀)</option>
-                <option value="long">🎬 沉浸長篇 (350~450字 / 故事起承轉合)</option>
+                <option value="medium">📖 標準深度 (約 180~260 字 / 完整五大架構)</option>
+                <option value="short">⚡ 極簡精煉 (約 80~120 字 / 金句速讀)</option>
+                <option value="long">🎬 沉浸長篇 (約 350~450 字 / 深度起承轉合)</option>
               </select>
             </div>
           </div>
@@ -247,7 +248,7 @@
 
           <!-- 生成按鈕 -->
           <button id="btnGenerateAI" class="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-md shadow-indigo-500/20 transition flex items-center justify-center gap-2">
-            <span id="genBtnIcon">✨</span> <span id="genBtnText">啟動真實 AI 專屬文案生成</span>
+            <span id="genBtnIcon">✨</span> <span id="genBtnText">依標準架構生成專屬文案</span>
           </button>
         </div>
 
@@ -263,7 +264,7 @@
             </div>
           </div>
           <div id="outputBox" class="w-full h-44 bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 text-xs leading-relaxed overflow-y-auto custom-scrollbar whitespace-pre-wrap selection:bg-blue-100">
-輸入交車背景後，點擊上方按鈕，AI 將為您即時撰寫完全貼合該位客戶的專屬貼文...
+點擊上方按鈕，AI 將依《行銷貼文》標準 5 大架構（破題、故事動機、亮點、祝福、行動呼籲）為您量身撰寫貼文...
           </div>
         </div>
       </div>
@@ -677,25 +678,44 @@
     });
 
     // =========================================================================
-    // API 金鑰與簽名檔管理
+    // API 金鑰快速綁定 & 簽名檔管理
     // =========================================================================
     const STORAGE_KEY_API = 'car_delivery_gemini_api_key_v1';
     const STORAGE_KEY_SIGN = 'car_delivery_signature_v1';
 
-    const savedApiKey = localStorage.getItem(STORAGE_KEY_API);
-    if (savedApiKey) document.getElementById('geminiApiKey').value = savedApiKey;
+    window.addEventListener('DOMContentLoaded', () => {
+      // 1. 支援網址帶入自動綁定 (例如 ?key=AIzaSy...)
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlKey = urlParams.get('key');
+      if (urlKey) {
+        localStorage.setItem(STORAGE_KEY_API, urlKey.trim());
+        window.history.replaceState({}, document.title, window.location.pathname);
+        alert('🎉 恭喜！已透過專屬連結成功為您自動綁定 API Key！');
+      }
 
-    const savedSign = localStorage.getItem(STORAGE_KEY_SIGN);
-    if (savedSign) {
-      document.getElementById('signatureInput').value = savedSign;
-    } else {
-      document.getElementById('signatureInput').value = "— Lexus 銷售顧問 士萱 | 用誠懇與透明，守護您與家人的下一趟旅程。";
-    }
+      // 2. 自動讀取已儲存的 Key
+      const savedApiKey = localStorage.getItem(STORAGE_KEY_API);
+      if (savedApiKey) {
+        document.getElementById('geminiApiKey').value = savedApiKey;
+      }
+
+      // 3. 讀取簽名檔
+      const savedSign = localStorage.getItem(STORAGE_KEY_SIGN);
+      if (savedSign) {
+        document.getElementById('signatureInput').value = savedSign;
+      } else {
+        document.getElementById('signatureInput').value = "— Lexus 銷售顧問 士萱 | 用誠懇與透明，守護您與家人的下一趟旅程。";
+      }
+    });
 
     document.getElementById('btnSaveKey').addEventListener('click', () => {
       const key = document.getElementById('geminiApiKey').value.trim();
+      if (!key) {
+        alert('請輸入有效的 Gemini API Key！');
+        return;
+      }
       localStorage.setItem(STORAGE_KEY_API, key);
-      alert('🔑 API Key 已儲存於本機！');
+      alert('🔑 API Key 已安全儲存於這台裝置的瀏覽器中！');
     });
 
     document.getElementById('btnSaveSign').addEventListener('click', () => {
@@ -705,14 +725,14 @@
     });
 
     // =========================================================================
-    // 智慧 API 調用（支援 3.7 / 3.5 / 3.1 與自動 ListModels 容錯機制）
+    // 智慧 API 調用 (自動容錯與多模型支援)
     // =========================================================================
     async function callGeminiAPI(apiKey, prompt) {
       const modelsToTry = [
+        'gemini-2.0-flash',
+        'gemini-2.5-flash',
         'gemini-3.7-flash',
         'gemini-3.5-flash-lite',
-        'gemini-3.1-pro',
-        'gemini-2.0-flash',
         'gemini-1.5-flash'
       ];
 
@@ -746,7 +766,7 @@
         }
       }
 
-      // 自動向官方查詢帳號可用模型清單
+      // 自動 ListModels 容錯
       try {
         const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
         const listRes = await fetch(listUrl);
@@ -774,7 +794,9 @@
       throw new Error(lastError || '無法連接至 Gemini 服務，請確認 API Key 是否有效。');
     }
 
-    // AI 生成主流程
+    // =========================================================================
+    // AI 生成主流程（融入《行銷貼文》標準 5 大文案結構）
+    // =========================================================================
     document.getElementById('btnGenerateAI').addEventListener('click', async () => {
       const story = document.getElementById('storyInput').value.trim();
       if (!story) {
@@ -792,12 +814,20 @@
       const genBtnText = document.getElementById('genBtnText');
       const genBtnIcon = document.getElementById('genBtnIcon');
 
-      let lengthDesc = "約 180~260 字，包含開場情境、購車考量條列、售後承諾與互動收尾";
-      if (lengthMode === "short") lengthDesc = "約 80~120 字，極簡精煉，注重對比金句與純粹祝福，不囉嗦";
-      else if (lengthMode === "long") lengthDesc = "約 350~450 字，完整的沉浸式故事，包含相遇契機、車主換車背後的細膩心理描繪、專業選車分析與尊榮售後承諾";
+      let lengthDesc = "標準長度（約 180~260 字），完整呈現五大架構";
+      if (lengthMode === "short") lengthDesc = "極簡精煉（約 80~120 字），提煉核心精髓，語句緊湊不囉嗦";
+      else if (lengthMode === "long") lengthDesc = "沉浸長篇（約 350~450 字），將故事與細節完整展開，強化情感共鳴";
 
-      const systemPrompt = `你是一位專業且真誠的 Lexus 汽車銷售顧問（業務名：士萱）。
-請根據以下真實的交車素材，為社群平台【${platform}】撰寫一篇具有溫度、保有個人專業品牌風格的交車貼文。
+      // 嚴格將《行銷貼文》5 大結構寫入系統提示詞
+      const systemPrompt = `你是一位專業且具備溫度的 Lexus 汽車銷售顧問（業務名：士萱）。
+請根據下方提供的真實交車背景素材，針對社群平台【${platform}】撰寫交車貼文。
+
+【嚴格遵循《行銷貼文》標準五大架構】：
+1. 🎉 破題標題 (Catchy Title)：用熱情且具質感的語氣恭喜客戶喜提愛車，建立停留時間。
+2. 📖 客戶小故事 / 購車動機 (The Story)：詳述客戶為何選這台車、購車契機或交車現場溫馨小插曲（務必緊扣素材，不瞎編無關事實）。
+3. 🚘 愛車亮點介紹 (Car Highlights)：點出該車款型號、車色特質或最打動客戶的專屬配備。
+4. 🙏 感恩與祝福 (Appreciation & Blessing)：感謝客戶信任託付，真誠承諾未來的售後守護。
+5. 📞 行動呼籲 / 演算法互動 (Call to Action)：生活化引導讀者互動留言或諮詢，強化社群觸及。
 
 【車主交車背景素材】：
 ${story}
@@ -805,16 +835,14 @@ ${story}
 【重要情境標籤】：
 ${selectedTags}
 
-【篇幅長度要求】：
+【篇幅長度規範】：
 ${lengthDesc}
 
-【寫作核心原則】：
-1. 嚴格根據上述素材撰寫！請精確捕捉素材中的人名、用車故事、退休禮物或長輩細節，絕不要自行胡亂套用無關的舊模板（如無關的二寶、安全座椅等）。
-2. 語氣自然誠懇，符合 ${platform} 現行演算法（注重真實停留率與真誠互動），避免浮誇的農場標題。
-3. 文末請自然附上以下簽名檔：
+【個人品牌簽名檔】：
+文末請自然獨立成行附上：
 ${signature}
 
-請直接輸出最終文案內容：`;
+請直接輸出最終排版好的文案內容（不要輸出多餘的解說字樣）：`;
 
       genBtnText.innerText = "AI 正在深度構思撰寫中...";
       genBtnIcon.innerText = "⏳";
@@ -830,14 +858,14 @@ ${signature}
       } catch (err) {
         alert('API 呼叫失敗：' + err.message);
       } finally {
-        genBtnText.innerText = "啟動真實 AI 專屬文案生成";
+        genBtnText.innerText = "依標準架構生成專屬文案";
         genBtnIcon.innerText = "✨";
       }
     });
 
     document.getElementById('btnCopy').addEventListener('click', () => {
       const text = document.getElementById('outputBox').innerText;
-      if (!text || text.startsWith('輸入交車背景')) {
+      if (!text || text.startsWith('點擊上方按鈕')) {
         alert('請先生成文案！');
         return;
       }
